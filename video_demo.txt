@@ -1,0 +1,42 @@
+[
+  {
+    "topic": "demo",
+    "event_id": "event-manual-123",
+    "timestamp": "2025-10-24T16:40:00Z",
+    "source": "video-demo-manual",
+    "payload": {
+      "message": "Pengujian manual untuk video demo"
+    }
+  }
+]
+
+[
+  {
+    "topic": "batch A",
+    "event_id": "batch-A-001",
+    "timestamp": "2025-10-24T16:50:00Z",
+    "source": "video-demo-batch",
+    "payload": { "message": "Event A - Baru" }
+  },
+  {
+    "topic": "batch B",
+    "event_id": "batch-B-002",
+    "timestamp": "2025-10-24T16:50:01Z",
+    "source": "video-demo-batch",
+    "payload": { "message": "Event B - Baru (akan duplikat)" }
+  },
+  {
+    "topic": "demo",
+    "event_id": "event-manual-123",
+    "timestamp": "2025-10-24T16:40:00Z",
+    "source": "video-demo-manual",
+    "payload": { "message": "Event C - Duplikat lama" }
+  },
+  {
+    "topic": "batch B",
+    "event_id": "batch-B-002",
+    "timestamp": "2025-10-24T16:50:02Z",
+    "source": "video-demo-batch",
+    "payload": { "message": "Event D - Duplikat dari B" }
+  }
+]

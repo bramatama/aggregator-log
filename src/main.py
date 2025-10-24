@@ -1,10 +1,9 @@
 import asyncio
 import sqlite3
 import json
-import time
 from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel, ValidationError
-from typing import List, Dict, Any, Set
+from pydantic import BaseModel
+from typing import List, Dict, Any
 from contextlib import asynccontextmanager
 from datetime import datetime
 import os
@@ -130,8 +129,8 @@ def process_event_in_db(event: Event) -> bool:
 
 async def consumer():
     """
-    Task background yang berjalan terus-menerus (seperti Koki).
-    Mengambil event dari antrian dan memprosesnya.
+    Task background yang berjalan terus-menerus.
+    Mengambil event dari queue dan memprosesnya.
     """
     print("Consumer task dimulai...")
     
