@@ -29,7 +29,8 @@ services:
       retries: 5
       start_period: 5s # Beri waktu untuk startup awal
 
-  # Service 2: Publisher
+  # Service 2: Publisher (Bonus, layanan terpisah)
+  # Service ini akan menjalankan skrip load test sekali dan exit.
   # publisher:
   #   build:
   #     context: .
