@@ -103,3 +103,5 @@ Dokumentasi lengkap tersedia di `http://localhost:8080/docs`.
     
 
 ## Video Demo
+
+https://youtu.be/3p8k7GzDRnA
