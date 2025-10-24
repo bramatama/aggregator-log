@@ -8,15 +8,15 @@ Tujuan utama layanan ini adalah menerima _event_ (log) dari _publisher_, mempros
 
 - **Pemrosesan Asinkron:** Menggunakan `FastAPI` + `asyncio.Queue` untuk menerima _event_ dengan cepat (`POST /publish`) dan memprosesnya di _background worker_ (`consumer`).
     
-- **Idempotent Consumer (Poin b):** Satu _event_ dengan `(topic, event_id)` yang sama hanya akan diproses satu kali, bahkan jika diterima berkali-kali.
+- **Idempotent Consumer (Poin B):** Satu _event_ dengan `(topic, event_id)` yang sama hanya akan diproses satu kali, bahkan jika diterima berkali-kali.
     
-- **Deduplication (Poin b):** Duplikasi _event_ secara otomatis dideteksi menggunakan `PRIMARY KEY` di SQLite dan dibuang.
+- **Deduplication (Poin B):** Duplikasi _event_ secara otomatis dideteksi menggunakan `PRIMARY KEY` di SQLite dan dibuang.
     
-- **Persistensi & Toleransi Crash (Poin c):** _Dedup store_ (SQLite) tahan terhadap restart container. _Event_ yang sudah diproses tidak akan diproses ulang setelah sistem _crash_ atau _restart_.
+- **Persistensi & Toleransi Crash (Poin C):** _Dedup store_ (SQLite) tahan terhadap restart container. _Event_ yang sudah diproses tidak akan diproses ulang setelah sistem _crash_ atau _restart_.
     
-- **Uji Skala (Poin d):** Sistem diuji menggunakan _service_ `publisher` terpisah di Docker Compose yang mengirim >= 5.000 _event_ (termasuk 20% duplikasi) untuk memastikan stabilitas dan responsivitas.
+- **Uji Skala (Poin D):** Sistem diuji menggunakan _service_ `publisher` terpisah di Docker Compose yang mengirim 5.000 _event_ (termasuk 20% duplikasi) untuk memastikan stabilitas dan responsivitas.
     
-- **Unit Tested (Poin f):** Mencakup 7 _unit test_ (`pytest`) yang memverifikasi API, logika dedup, persistensi, dan _stress_ kecil.
+- **Unit Tested (Poin f):** Mencakup 7 _unit test_ (`pytest`) yang memverifikasi API, logika deduplikasi, persistensi, dan _stress_ kecil.
     
 
 ## Cara Menjalankan Proyek
@@ -47,7 +47,7 @@ docker-compose up --build
     
 3. **Run `publisher`:** Layanan `publisher` akan menunggu hingga `aggregator` _healthy_, kemudian secara otomatis mengirimkan **5.000 event** (4.000 unik, 1.000 duplikat) untuk memenuhi **Poin (d) Skala Uji**.
     
-4. **Verifikasi:** Anda dapat melihat log dari `publisher` yang memverifikasi bahwa statistik di `aggregator` sudah benar setelah 5.000 _event_ terkirim.
+4. **Verifikasi:** setelah event terkirim log dari `publisher` akan muncul memverifikasi bahwa statistik di `aggregator` sudah benar setelah 5.000 _event_ terkirim.
     
 
 ### 3. Mengakses Layanan
@@ -88,7 +88,7 @@ Anda juga dapat menjalankan 7 _unit test_ secara lokal (di luar Docker).
     pytest -v
     ```
     
-    Anda akan melihat 7 tes berjalan dan `PASS`.
+    7 unit test akan berjalan dan `PASS`.
     
 
 ## Endpoint API

@@ -3,7 +3,9 @@ import uuid
 import time
 import random
 import os
+import threading
 from datetime import datetime
+
 
 # --- Konfigurasi Tes ---
 TOTAL_EVENTS = 5000
@@ -11,6 +13,9 @@ DUPLICATE_PERCENTAGE = 0.20 # 20%
 BATCH_SIZE = 100
 # BACA URL DARI ENVIRONMENT VARIABLE (disediakan oleh docker-compose)
 BASE_URL = os.getenv("AGGREGATOR_URL", "http://localhost:8080")
+
+responsive_check_passed = None
+
 
 def generate_event(topic, event_id):
     """Membuat satu event dummy."""
@@ -22,8 +27,33 @@ def generate_event(topic, event_id):
         "payload": {"run_id": str(uuid.uuid4())}
     }
 
+def check_responsiveness():
+    """
+    Thread terpisah yang mengecek /stats saat load test berjalan.
+    """
+    global responsive_check_passed
+    try:
+        print("\n[Responsiveness Check] Mengecek GET /stats...")
+        start_time = time.time()
+        res = requests.get(f"{BASE_URL}/stats", timeout=2.0) # Timeout 2 detik
+        end_time = time.time()
+        
+        if res.status_code == 200:
+            print(f"[Responsiveness Check] BERHASIL! /stats merespons dalam {end_time - start_time:.2f} detik.")
+            responsive_check_passed = True
+        else:
+            print(f"[Responsiveness Check] GAGAL! /stats mengembalikan {res.status_code}")
+            responsive_check_passed = False
+    except requests.exceptions.Timeout:
+        print("[Responsiveness Check] GAGAL! /stats timeout (> 2 detik).")
+        responsive_check_passed = False
+    except Exception as e:
+        print(f"[Responsiveness Check] GAGAL! Error: {e}")
+        responsive_check_passed = False
+
 def run_load_test():
     """Menjalankan load test utama."""
+    global responsive_check_passed
     
     print(f"--- Publisher Service Dimulai ---")
     print(f"Target Aggregator: {BASE_URL}")
@@ -31,6 +61,8 @@ def run_load_test():
     
     num_unique = int(TOTAL_EVENTS * (1 - DUPLICATE_PERCENTAGE))
     num_duplicates = TOTAL_EVENTS - num_unique
+
+    print(f"Unik: {num_unique}, Duplikat: {num_duplicates}")
     
     # 1. Buat event unik
     unique_events = [generate_event("loadtest", uuid.uuid4()) for _ in range(num_unique)]
@@ -54,6 +86,10 @@ def run_load_test():
 
     # 5. Mulai mengirim
     start_time = time.time()
+
+    threading.Timer(5.0, check_responsiveness).start()
+    threading.Timer(25.0, check_responsiveness).start()
+    threading.Timer(60.0, check_responsiveness).start()
     
     sent_count = 0
     for i in range(0, len(all_events_to_send), BATCH_SIZE):
@@ -71,7 +107,7 @@ def run_load_test():
     end_time = time.time()
     print(f"\nSelesai mengirim {TOTAL_EVENTS} event dalam {end_time - start_time:.2f} detik.")
     
-    print("Menunggu consumer memproses (5 detik)...")
+    print("Menunggu consumer memproses")
     time.sleep(5) # Beri waktu consumer untuk memproses sisa antrian
 
     # 6. Dapatkan stats akhir
@@ -83,16 +119,23 @@ def run_load_test():
     
     print(f"Total Unik Diproses (sesuai laporan aggregator): {total_unique_processed} (Diharapkan: {num_unique})")
     print(f"Total Duplikat Dibuang (sesuai laporan aggregator): {total_duplicates_dropped} (Diharapkan: {num_duplicates})")
-        
+    
+
     if total_unique_processed == num_unique:
-        print("\nStatus Poin (d): BERHASIL! (Jumlah unik sesuai)")
+        print("\nStatus Poin (D): BERHASIL! (Jumlah unik sesuai)")
     else:
-        print(f"\nStatus Poin (d): GAGAL! (Jumlah unik {total_unique_processed}, diharapkan {num_unique})")
+        print(f"\nStatus Poin (D): GAGAL! (Jumlah unik {total_unique_processed}, diharapkan {num_unique})")
+    
+    if responsive_check_passed is None:
+        print("[Responsiveness Check] Pengecekan tidak sempat berjalan.")
+    elif responsive_check_passed:
+        print("[Responsiveness Check] Sistem TETAP RESPONSIF selama tes.")
+    else:
+        print("[Responsiveness Check] Sistem TIDAK RESPONSIF selama tes.")
 
     print("--- Publisher Service Selesai ---")
 
 if __name__ == "__main__":
-    # Coba hubungi aggregator 5x sebelum menyerah
     connected = False
     for i in range(5):
         try:

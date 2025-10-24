@@ -9,8 +9,6 @@ def create_test_event(event_id: str, topic: str = "test-topic"):
     return {
         "topic": topic,
         "event_id": event_id,
-        # --- 2. PERBAIKAN DI BAWAH INI ---
-        # Ubah dari time.time() (float) menjadi string ISO8601
         "timestamp": datetime.now().isoformat() + "Z",
         "source": "pytest",
         "payload": {"test_id": event_id}

@@ -1,46 +1,39 @@
 networks:
-  # Definisikan jaringan internal kustom
   app-net:
     driver: bridge
 
 volumes:
-  # Definisikan volume untuk persistensi DB aggregator
   aggregator-db-volume:
 
 services:
-  # Service 1: Aggregator (Aplikasi utama Anda)
+  # Service 1: Aggregator 
   aggregator:
     build:
       context: .
-      dockerfile: Dockerfile # Menggunakan Dockerfile utama
+      dockerfile: Dockerfile 
     ports:
-      - "8080:8080" # Mapping port host:container
+      - "8080:8080" 
     volumes:
-      # Mount volume ke /app (WORKDIR) dimana aggregator.db dibuat
-      # Ini adalah kunci persistensi (poin c)
+      # Mount volume ke /app
       - aggregator-db-volume:/app
     networks:
       - app-net
-    # Healthcheck agar publisher tahu kapan aggregator siap
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/stats"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 5s # Beri waktu untuk startup awal
+      start_period: 5s 
 
-  # Service 2: Publisher (Bonus, layanan terpisah)
-  # Service ini akan menjalankan skrip load test sekali dan exit.
-  # publisher:
-  #   build:
-  #     context: .
-  #     dockerfile: publisher.Dockerfile # Menggunakan Dockerfile khusus publisher
-  #   depends_on:
-  #     aggregator:
-  #       # Hanya mulai jika aggregator 'healthy'
-  #       condition: service_healthy 
-  #   environment:
-  #     # Beri tahu publisher URL aggregator di jaringan internal
-  #     - AGGREGATOR_URL=http://aggregator:8080
-  #   networks:
-  #     - app-net
+  # Service 2: Publisher 
+  publisher:
+    build:
+      context: .
+      dockerfile: publisher.Dockerfile 
+    depends_on:
+      aggregator:
+        condition: service_healthy 
+    environment:
+      - AGGREGATOR_URL=http://aggregator:8080
+    networks:
+      - app-net
