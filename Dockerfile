@@ -13,8 +13,6 @@ COPY src/ ./src/
 
 RUN chown -R appuser:appuser /app
 
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
 USER appuser
 
 EXPOSE 8080

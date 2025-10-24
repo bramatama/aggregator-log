@@ -19,7 +19,7 @@ services:
     networks:
       - app-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/stats"]
+      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8080/stats\")' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

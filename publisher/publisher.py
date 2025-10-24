@@ -11,7 +11,6 @@ from datetime import datetime
 TOTAL_EVENTS = 5000
 DUPLICATE_PERCENTAGE = 0.20 # 20%
 BATCH_SIZE = 100
-# BACA URL DARI ENVIRONMENT VARIABLE (disediakan oleh docker-compose)
 BASE_URL = os.getenv("AGGREGATOR_URL", "http://localhost:8080")
 
 responsive_check_passed = None
@@ -108,7 +107,7 @@ def run_load_test():
     print(f"\nSelesai mengirim {TOTAL_EVENTS} event dalam {end_time - start_time:.2f} detik.")
     
     print("Menunggu consumer memproses")
-    time.sleep(5) # Beri waktu consumer untuk memproses sisa antrian
+    time.sleep(5) 
 
     # 6. Dapatkan stats akhir
     stats_after = requests.get(f"{BASE_URL}/stats").json()

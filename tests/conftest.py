@@ -2,15 +2,12 @@ import pytest
 from fastapi.testclient import TestClient
 import os
 import time
-from datetime import datetime # <-- 1. TAMBAHKAN IMPORT INI
+from datetime import datetime
 
-# Helper function untuk membuat event
 def create_test_event(event_id: str, topic: str = "test-topic"):
     return {
         "topic": topic,
         "event_id": event_id,
-        # --- 2. PERBAIKAN DI BAWAH INI ---
-        # Ubah dari time.time() (float) menjadi string ISO8601
         "timestamp": datetime.now().isoformat() + "Z",
         "source": "pytest",
         "payload": {"test_id": event_id}
